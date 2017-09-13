@@ -3,6 +3,7 @@ package com.glumes.camerasample;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -11,8 +12,12 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.annotation.IntDef;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
@@ -22,6 +27,7 @@ import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
 import android.widget.Button;
 
 import com.glumes.camerasample.views.AutoFitTextureView;
@@ -33,7 +39,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
-public class TextureViewActivity extends AppCompatActivity {
+public class TextureViewActivity extends AppCompatActivity implements View.OnClickListener {
 
     @BindView(R.id.textureView)
     AutoFitTextureView textureView;
@@ -62,12 +68,28 @@ public class TextureViewActivity extends AppCompatActivity {
     protected CaptureRequest.Builder captureRequestBuilder;
     protected CameraCaptureSession cameraCaptureSessions;
 
+    ImageReader imageReader;
+
+
+    private HandlerThread mBackgroundThread;
+    private Handler mBackgroundHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_texture_view);
         ButterKnife.bind(this);
+        takePicture.setOnClickListener(this);
+
+        imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 1);
+
+        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader imageReader) {
+                Timber.d("onImageAvailable do Action");
+            }
+        }, mBackgroundHandler);
+
 
     }
 
@@ -75,6 +97,10 @@ public class TextureViewActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        mBackgroundThread = new HandlerThread("CameraBackground");
+        mBackgroundThread.start();
+        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
 
         textureView.setSurfaceTextureListener(surfaceTextureListener);
     }
@@ -151,6 +177,16 @@ public class TextureViewActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * 建立会话时的回调函数
+     */
+    CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+            Timber.d("onCaptureCompleted");
+        }
+    };
+
     private void createCameraPreview() {
         try {
             SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
@@ -161,7 +197,9 @@ public class TextureViewActivity extends AppCompatActivity {
             captureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
 
-            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+//            captureRequestBuilder.addTarget(imageReader.getSurface());
+
+            mCameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()), new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession session) {
                     if (mCameraDevice == null) {
@@ -188,7 +226,7 @@ public class TextureViewActivity extends AppCompatActivity {
 
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         try {
-            cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+            cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Timber.e(e.getMessage(), e);
         }
@@ -201,6 +239,71 @@ public class TextureViewActivity extends AppCompatActivity {
                 Timber.d("permissions denied");
                 finish();
             }
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+//        takePictureNewSession();
+        takePictureOldSession();
+    }
+
+    private void takePictureOldSession() {
+        captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+
+        try {
+            cameraCaptureSessions.capture(captureRequestBuilder.build(), captureCallback, null);
+        } catch (CameraAccessException e) {
+            Timber.e(e.getMessage(), e);
+
+        }
+    }
+
+
+    private void takePictureNewSession() {
+
+        try {
+            final CaptureRequest.Builder builder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            builder.addTarget(imageReader.getSurface());
+
+            builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
+            // Orientation
+            int rotation = getWindowManager().getDefaultDisplay().getRotation();
+
+            builder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
+
+
+            final CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
+                @Override
+                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                    createCameraPreview();
+                }
+            };
+
+//            cameraCaptureSessions.capture()
+
+            Surface surface = new Surface(textureView.getSurfaceTexture());
+
+            mCameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()), new CameraCaptureSession.StateCallback() {
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+                    try {
+                        cameraCaptureSession.capture(builder.build(), captureCallback, null);
+                        Timber.d("cameraCaptureSession");
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+
+                }
+            }, null);
+
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
         }
     }
 }
