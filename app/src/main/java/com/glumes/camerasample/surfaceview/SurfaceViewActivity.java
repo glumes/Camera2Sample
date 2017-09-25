@@ -1,4 +1,4 @@
-package com.glumes.camerasample;
+package com.glumes.camerasample.surfaceview;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -30,6 +30,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.glumes.camerasample.R;
 
 import org.w3c.dom.Text;
 

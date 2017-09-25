@@ -16,20 +16,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SurfaceViewActivity">
+        <activity android:name=".surfaceview.SurfaceViewActivity">
         </activity>
-        <activity android:name=".TextureViewActivity">
-
+        <activity android:name=".textureview.TextureViewActivity">
         </activity>
         <activity android:name=".AndroidCameraApi">
         </activity>
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".camera.CameraActivity">
         </activity>
     </application>
 

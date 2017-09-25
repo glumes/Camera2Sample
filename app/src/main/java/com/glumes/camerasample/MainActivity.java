@@ -35,6 +35,6 @@ public class MainActivity extends AppCompatActivity {
 
         items.add(new TextModel("Camera Display On SurfaceView", Constants.SURFACEVIEW));
         items.add(new TextModel("Camera Display On TextureView", Constants.SURFACEVIEW));
-
+        items.add(new TextModel("Use Camera", Constants.CAMERA_1));
     }
 }

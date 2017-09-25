@@ -1,4 +1,4 @@
-package com.glumes.camerasample;
+package com.glumes.camerasample.textureview;
 
 import android.Manifest;
 import android.content.Context;
@@ -18,8 +18,6 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.IntDef;
-import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +28,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 
+import com.glumes.camerasample.R;
 import com.glumes.camerasample.views.AutoFitTextureView;
 
 
