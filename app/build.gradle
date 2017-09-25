@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 25
     buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "com.glumes.camerasample"
         minSdkVersion 22
-        targetSdkVersion 26
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -17,6 +17,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    dataBinding {
+        enabled = true
+    }
+
+
 }
 
 dependencies {
@@ -25,8 +31,8 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-
-    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.github.glumes:databindingadapter:v0.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.jakewharton:butterknife:8.8.1'
     compile 'com.jakewharton.timber:timber:4.5.1'
