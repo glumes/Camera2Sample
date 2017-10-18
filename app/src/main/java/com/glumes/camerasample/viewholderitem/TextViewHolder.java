@@ -1,6 +1,8 @@
 package com.glumes.camerasample.viewholderitem;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.View;
 
 import com.glumes.camerasample.camera.CameraActivity;
@@ -21,30 +23,38 @@ public class TextViewHolder extends BindingViewHolder<TextModel, TextLayoutBindi
     }
 
     @Override
-    protected void onBind(final TextModel textModel) {
+    protected void onBind(final TextModel textModel, int i) {
         mBinding.setViewmodel(textModel);
         mBinding.executePendingBindings();
+
+
+        if (textModel.type == Constants.TITLE) {
+            mBinding.text.setTextColor(Color.BLUE);
+        }
 
         mBinding.text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent();
                 switch (textModel.type) {
                     case Constants.SURFACEVIEW:
-                        intent.setClass(v.getContext(), SurfaceViewActivity.class);
+                        startActivity(v.getContext(), SurfaceViewActivity.class);
                         break;
                     case Constants.TEXTUREVIEW:
-                        intent.setClass(v.getContext(), TextureViewActivity.class);
+                        startActivity(v.getContext(), TextureViewActivity.class);
                         break;
                     case Constants.CAMERA_1:
-                        intent.setClass(v.getContext(), CameraActivity.class);
+                        startActivity(v.getContext(), CameraActivity.class);
                         break;
                     default:
                         break;
                 }
-                v.getContext().startActivity(intent);
             }
         });
+    }
+
+
+    private void startActivity(Context context, Class<?> clazz) {
+        context.startActivity(new Intent(context, clazz));
     }
 }

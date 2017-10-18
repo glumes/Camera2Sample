@@ -10,7 +10,8 @@
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_width="match_parent"
-                  android:layout_height="80dp"
+                  android:layout_height="wrap_content"
+                  android:id="@+id/layout"
                   android:orientation="vertical">
 
         <TextView
@@ -18,9 +19,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
+            android:layout_margin="5dp"
             android:gravity="center"
-            android:textSize="24sp"
-            android:text="@{viewmodel.text}"/>
+            android:text="@{viewmodel.text}"
+            android:textSize="24sp"/>
 
     </LinearLayout>
 

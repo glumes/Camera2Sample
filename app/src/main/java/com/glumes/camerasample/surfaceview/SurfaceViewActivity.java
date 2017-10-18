@@ -18,7 +18,6 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -33,11 +32,8 @@ import android.widget.ImageView;
 
 import com.glumes.camerasample.R;
 
-import org.w3c.dom.Text;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.jar.Manifest;
 
 public class SurfaceViewActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -73,7 +69,7 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.camera_layout);
+        setContentView(R.layout.android_camera_surface_view);
 
         initView();
     }
@@ -252,7 +248,7 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View view) {
-        takePicture();
+//        takePicture();
     }
 
     private void takePicture() {

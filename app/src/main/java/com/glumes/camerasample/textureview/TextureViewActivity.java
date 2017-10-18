@@ -76,7 +76,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_texture_view);
+        setContentView(R.layout.activity_camera_texture_view);
         ButterKnife.bind(this);
         takePicture.setOnClickListener(this);
 

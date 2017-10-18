@@ -14,7 +14,6 @@ import com.glumes.databindingadapter.ViewHolderBinder;
 
 public class TextItemBinder extends ViewHolderBinder<TextModel, TextViewHolder> {
 
-
     @Override
     public TextViewHolder createViewHolder(LayoutInflater layoutInflater, ViewGroup viewGroup) {
 
@@ -24,7 +23,9 @@ public class TextItemBinder extends ViewHolderBinder<TextModel, TextViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(TextViewHolder textViewHolder, TextModel textModel) {
-        textViewHolder.onBind(textModel);
+    public void onBindViewHolder(TextViewHolder textViewHolder, TextModel textModel, int i) {
+        textViewHolder.onBind(textModel, i);
+
     }
+
 }

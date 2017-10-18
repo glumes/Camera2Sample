@@ -33,8 +33,12 @@ public class MainActivity extends AppCompatActivity {
 
         mSampleBinding.recyclerView.setAdapter(mAdapter);
 
-        items.add(new TextModel("Camera Display On SurfaceView", Constants.SURFACEVIEW));
-        items.add(new TextModel("Camera Display On TextureView", Constants.SURFACEVIEW));
-        items.add(new TextModel("Use Camera", Constants.CAMERA_1));
+        items.add(new TextModel("安卓相机 1.0 API 接口", Constants.TITLE));
+        items.add(new TextModel("相机 1.0 预览拍摄", Constants.CAMERA_1));
+        items.add(new TextModel("", Constants.PLACEHOLDER));
+
+        items.add(new TextModel("安卓相机 2.0 API 接口", Constants.TITLE));
+        items.add(new TextModel("相机 2.0 预览拍摄之 SurfaceView", Constants.SURFACEVIEW));
+        items.add(new TextModel("相机 2.0 预览拍摄之 TextureView", Constants.TEXTUREVIEW));
     }
 }
