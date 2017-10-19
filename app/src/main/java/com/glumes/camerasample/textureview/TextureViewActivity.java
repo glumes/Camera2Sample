@@ -88,13 +88,19 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     private Context mContext;
     public String mOutputUri;
 
+    private SurfaceTexture mSurfaceTexture;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_texture_view);
         ButterKnife.bind(this);
         mContext = this;
+
+        textureView.setVisibility(View.GONE);
+        textureView.setVisibility(View.VISIBLE);
         takePicture.setOnClickListener(this);
+        textureView.setSurfaceTextureListener(surfaceTextureListener);
 
         imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 1);
 
@@ -147,12 +153,16 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onResume() {
         super.onResume();
+        Timber.d("onResume");
+    }
 
-        mBackgroundThread = new HandlerThread("CameraBackground");
-        mBackgroundThread.start();
-        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-
-        textureView.setSurfaceTextureListener(surfaceTextureListener);
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mCameraDevice != null) {
+            mCameraDevice.close();
+            mCameraDevice = null;
+        }
     }
 
     /**
@@ -172,6 +182,9 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+            if (mCameraDevice != null){
+                mCameraDevice.close();
+            }
             return false;
         }
 
@@ -184,6 +197,9 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     private void openCamera() {
 
         mMainHandler = new Handler(getMainLooper());
+        mBackgroundThread = new HandlerThread("CameraBackground");
+        mBackgroundThread.start();
+        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
 
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
@@ -203,7 +219,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
                         new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
                 return;
             }
-            manager.openCamera(cameraId, mStateCallback, null);
+            manager.openCamera(cameraId, mStateCallback, mMainHandler);
         } catch (CameraAccessException e) {
             Timber.e(e.getMessage(), e);
         }
@@ -221,7 +237,9 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
         @Override
         public void onDisconnected(@NonNull CameraDevice cameraDevice) {
-
+            if (mCameraDevice != null){
+                mCameraDevice.close();
+            }
         }
 
         @Override
@@ -230,26 +248,20 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
         }
     };
 
-    /**
-     * 建立会话时的回调函数
-     */
-    CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-            Timber.d("onCaptureCompleted");
-        }
-    };
 
     private void createCameraPreview() {
         try {
-            SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
-            surfaceTexture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
-            Surface surface = new Surface(surfaceTexture);
+
+            if (!textureView.isAvailable()){
+                return;
+            }
+            mSurfaceTexture = textureView.getSurfaceTexture();
+            mSurfaceTexture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+            Surface surface = new Surface(mSurfaceTexture);
 
             // 创建一个 CaptureRequest 还有不同的类型可选
             captureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
-//            captureRequestBuilder.addTarget(imageReader.getSurface());
 
             mCameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()), new CameraCaptureSession.StateCallback() {
                 @Override
@@ -265,7 +277,8 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
                 public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
                     Timber.d("onConfigureFailed failed");
                 }
-            }, null);
+            }, mBackgroundHandler);
+
         } catch (CameraAccessException e) {
             Timber.e(e.getMessage(), e);
         }
@@ -275,7 +288,6 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
         if (mCameraDevice == null) {
             return;
         }
-
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         try {
             cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
@@ -317,15 +329,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
             builder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
 
-
-            final CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
-                @Override
-                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                    createCameraPreview();
-                }
-            };
-
-            cameraCaptureSessions.capture(builder.build(), captureCallback, mBackgroundHandler);
+            cameraCaptureSessions.capture(builder.build(), null, mBackgroundHandler);
 
         } catch (CameraAccessException e) {
             e.printStackTrace();
