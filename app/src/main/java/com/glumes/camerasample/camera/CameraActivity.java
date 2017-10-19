@@ -75,6 +75,7 @@ public class CameraActivity extends AppCompatActivity {
                 mCamera.setPreviewDisplay(mSurfaceHolder);
 
                 mCamera.startPreview();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

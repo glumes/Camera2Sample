@@ -1,6 +1,7 @@
 package com.glumes.camerasample.surfaceview;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +17,7 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -31,9 +33,20 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.glumes.camerasample.R;
+import com.glumes.camerasample.display.DisplayActivity;
+import com.glumes.camerasample.utils.Constants;
+import com.glumes.camerasample.utils.FileUtil;
+import com.glumes.camerasample.views.CircleButton;
 
+import org.w3c.dom.Text;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
+import timber.log.Timber;
 
 public class SurfaceViewActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -49,7 +62,7 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
     }
 
 
-    private ImageView imageView;
+    private CircleButton mCircleButton;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
 
@@ -63,19 +76,23 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
 
     private Handler mainHandler;
     private Handler childHandler;
+    private Context mContext;
 
     public static final String TAG = "SurfaceViewActivity";
+
+    public String mOutputUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.android_camera_surface_view);
-
+        mContext = this;
         initView();
     }
 
     private void initView() {
-        imageView = (ImageView) findViewById(R.id.image_view);
+        mCircleButton = (CircleButton) findViewById(R.id.image_view);
+        mCircleButton.setOnClickListener(this);
         surfaceView = (SurfaceView) findViewById(R.id.surface_view);
 
         surfaceView.setOnClickListener(this);
@@ -114,21 +131,45 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                cameraDevice.close();
-                surfaceView.setVisibility(View.GONE);
-                imageView.setVisibility(View.VISIBLE);
+
+                Log.d(TAG, "onImageAvailable");
 
                 Image image = reader.acquireNextImage();
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
-
                 buffer.get(bytes);
 
-                final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                if (bitmap != null) {
-                    imageView.setImageBitmap(bitmap);
+                File tempOutputPic = FileUtil.makeTempFile(mContext, Constants.TEMP_FILE_DIR, Constants.TMEP_PIC_PREFIX, Constants.TEMP_PIC_EXTENSION);
+
+                FileOutputStream output = null;
+
+                try {
+                    output = new FileOutputStream(tempOutputPic);
+                    output.write(bytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    image.close();
+                    if (null != output) {
+                        try {
+                            output.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Timber.d("save image");
                 }
+
+                mOutputUri = Uri.fromFile(tempOutputPic).toString();
+
+                Intent intent = new Intent(mContext, DisplayActivity.class);
+                intent.putExtra(Constants.OUTPUT_PIC_URI, mOutputUri);
+
+                startActivity(intent);
+
+                Timber.d(mOutputUri);
+
             }
         }, mainHandler);
 
@@ -173,14 +214,14 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
         public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
             super.onCaptureStarted(session, request, timestamp, frameNumber);
 
-            Log.d(TAG,"onCaptureStarted");
+            Log.d(TAG, "onCaptureStarted");
         }
 
         @Override
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
 
-            Log.d(TAG,"onCaptureCompleted");
+            Log.d(TAG, "onCaptureCompleted");
 
         }
 
@@ -189,7 +230,7 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
         public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
             super.onCaptureProgressed(session, request, partialResult);
 
-            Log.d(TAG,"onCaptureProgressed");
+            Log.d(TAG, "onCaptureProgressed");
 
         }
 
@@ -197,7 +238,7 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
         public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
             super.onCaptureFailed(session, request, failure);
 
-            Log.d(TAG,"onCaptureFailed");
+            Log.d(TAG, "onCaptureFailed");
 
         }
 
@@ -205,7 +246,7 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
         public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {
             super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
 
-            Log.d(TAG,"onCaptureSequenceCompleted");
+            Log.d(TAG, "onCaptureSequenceCompleted");
 
         }
     };
@@ -229,7 +270,8 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
 
                                 CaptureRequest previewRequest = previewRequestBuilder.build();
 
-                                cameraCaptureSession.setRepeatingRequest(previewRequest, captureCallback, childHandler);
+                                cameraCaptureSession.setRepeatingRequest(previewRequest, null, childHandler);
+
                             } catch (CameraAccessException e) {
                                 Log.d(TAG, "open camera failed");
                             }
@@ -248,7 +290,8 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View view) {
-//        takePicture();
+        Log.d(TAG, "onClick");
+        takePicture();
     }
 
     private void takePicture() {

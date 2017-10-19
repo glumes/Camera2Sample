@@ -2,6 +2,7 @@ package com.glumes.camerasample.textureview;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -14,7 +15,9 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -26,12 +29,19 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.widget.Button;
 
 import com.glumes.camerasample.R;
+import com.glumes.camerasample.display.DisplayActivity;
+import com.glumes.camerasample.utils.Constants;
+import com.glumes.camerasample.utils.FileUtil;
 import com.glumes.camerasample.views.AutoFitTextureView;
+import com.glumes.camerasample.views.CircleButton;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import butterknife.BindView;
@@ -42,8 +52,8 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
     @BindView(R.id.textureView)
     AutoFitTextureView textureView;
-    @BindView(R.id.takePicture)
-    Button takePicture;
+    @BindView(R.id.image_view)
+    CircleButton takePicture;
 
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -73,11 +83,17 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
 
+    private Handler mMainHandler;
+
+    private Context mContext;
+    public String mOutputUri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_texture_view);
         ButterKnife.bind(this);
+        mContext = this;
         takePicture.setOnClickListener(this);
 
         imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 1);
@@ -86,8 +102,43 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
             @Override
             public void onImageAvailable(ImageReader imageReader) {
                 Timber.d("onImageAvailable do Action");
+                Image image = imageReader.acquireNextImage();
+
+                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+
+                File tempOutputPic = FileUtil.makeTempFile(mContext, Constants.TEMP_FILE_DIR, Constants.TMEP_PIC_PREFIX, Constants.TEMP_PIC_EXTENSION);
+
+                FileOutputStream output = null;
+
+                try {
+                    output = new FileOutputStream(tempOutputPic);
+                    output.write(bytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    image.close();
+                    if (null != output) {
+                        try {
+                            output.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Timber.d("save image");
+                }
+
+                mOutputUri = Uri.fromFile(tempOutputPic).toString();
+
+                Intent intent = new Intent(mContext, DisplayActivity.class);
+                intent.putExtra(Constants.OUTPUT_PIC_URI, mOutputUri);
+
+                startActivity(intent);
+
+                Timber.d(mOutputUri);
             }
-        }, mBackgroundHandler);
+        }, mMainHandler);
 
 
     }
@@ -131,6 +182,9 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     };
 
     private void openCamera() {
+
+        mMainHandler = new Handler(getMainLooper());
+
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
             cameraId = manager.getCameraIdList()[0];
@@ -195,7 +249,6 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
             // 创建一个 CaptureRequest 还有不同的类型可选
             captureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
-
 //            captureRequestBuilder.addTarget(imageReader.getSurface());
 
             mCameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()), new CameraCaptureSession.StateCallback() {
@@ -243,29 +296,21 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View view) {
-//        takePictureNewSession();
-        takePictureOldSession();
-    }
-
-    private void takePictureOldSession() {
-        captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-
-        try {
-            cameraCaptureSessions.capture(captureRequestBuilder.build(), captureCallback, null);
-        } catch (CameraAccessException e) {
-            Timber.e(e.getMessage(), e);
-
-        }
+        takePicture();
     }
 
 
-    private void takePictureNewSession() {
+    private void takePicture() {
 
         try {
             final CaptureRequest.Builder builder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             builder.addTarget(imageReader.getSurface());
 
             builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
+
+            builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+            builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
 
             // Orientation
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
@@ -280,26 +325,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
                 }
             };
 
-//            cameraCaptureSessions.capture()
-
-            Surface surface = new Surface(textureView.getSurfaceTexture());
-
-            mCameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()), new CameraCaptureSession.StateCallback() {
-                @Override
-                public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-                    try {
-                        cameraCaptureSession.capture(builder.build(), captureCallback, null);
-                        Timber.d("cameraCaptureSession");
-                    } catch (CameraAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-
-                }
-            }, null);
+            cameraCaptureSessions.capture(builder.build(), captureCallback, mBackgroundHandler);
 
         } catch (CameraAccessException e) {
             e.printStackTrace();

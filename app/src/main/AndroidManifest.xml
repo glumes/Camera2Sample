@@ -30,7 +30,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".camera.CameraActivity">
-
+        </activity>
+        <activity android:name=".display.DisplayActivity">
         </activity>
     </application>
 
