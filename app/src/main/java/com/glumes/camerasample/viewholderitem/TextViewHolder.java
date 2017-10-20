@@ -5,10 +5,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.view.View;
 
+import com.glumes.camerasample.textureview.AndroidCameraApi;
 import com.glumes.camerasample.camera.CameraActivity;
 import com.glumes.camerasample.surfaceview.SurfaceViewActivity;
-import com.glumes.camerasample.textureview.TextureViewActivity;
 import com.glumes.camerasample.databinding.TextLayoutBinding;
+import com.glumes.camerasample.textureview.TextureViewActivity;
 import com.glumes.camerasample.utils.Constants;
 import com.glumes.databindingadapter.BindingViewHolder;
 

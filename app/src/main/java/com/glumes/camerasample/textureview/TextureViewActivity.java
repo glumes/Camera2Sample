@@ -17,6 +17,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.TimedMetaData;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,7 +43,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,9 +53,9 @@ import timber.log.Timber;
 
 public class TextureViewActivity extends AppCompatActivity implements View.OnClickListener {
 
-    @BindView(R.id.textureView)
+    //    @BindView(R.id.textureView)
     AutoFitTextureView textureView;
-    @BindView(R.id.image_view)
+    //    @BindView(R.id.image_view)
     CircleButton takePicture;
 
 
@@ -77,9 +80,6 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     protected CaptureRequest.Builder captureRequestBuilder;
     protected CameraCaptureSession cameraCaptureSessions;
 
-    ImageReader imageReader;
-
-
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
 
@@ -94,58 +94,15 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_texture_view);
-        ButterKnife.bind(this);
         mContext = this;
+
+        textureView = (AutoFitTextureView) findViewById(R.id.textureView);
 
         textureView.setVisibility(View.GONE);
         textureView.setVisibility(View.VISIBLE);
+
+        takePicture = (CircleButton) findViewById(R.id.image_view);
         takePicture.setOnClickListener(this);
-        textureView.setSurfaceTextureListener(surfaceTextureListener);
-
-        imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 1);
-
-        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
-            @Override
-            public void onImageAvailable(ImageReader imageReader) {
-                Timber.d("onImageAvailable do Action");
-                Image image = imageReader.acquireNextImage();
-
-                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                byte[] bytes = new byte[buffer.remaining()];
-                buffer.get(bytes);
-
-                File tempOutputPic = FileUtil.makeTempFile(mContext, Constants.TEMP_FILE_DIR, Constants.TMEP_PIC_PREFIX, Constants.TEMP_PIC_EXTENSION);
-
-                FileOutputStream output = null;
-
-                try {
-                    output = new FileOutputStream(tempOutputPic);
-                    output.write(bytes);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    image.close();
-                    if (null != output) {
-                        try {
-                            output.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    Timber.d("save image");
-                }
-
-                mOutputUri = Uri.fromFile(tempOutputPic).toString();
-
-                Intent intent = new Intent(mContext, DisplayActivity.class);
-                intent.putExtra(Constants.OUTPUT_PIC_URI, mOutputUri);
-
-                startActivity(intent);
-
-                Timber.d(mOutputUri);
-            }
-        }, mMainHandler);
-
 
     }
 
@@ -154,14 +111,50 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     protected void onResume() {
         super.onResume();
         Timber.d("onResume");
+
+        if (textureView.isAvailable()) {
+            Timber.d("textureView is avaiable");
+            openCamera();
+        } else {
+            textureView.setSurfaceTextureListener(surfaceTextureListener);
+            Timber.d("textureView is not avaiable");
+        }
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mCameraDevice != null) {
+        closeCamera();
+        stopBackgroundThread();
+    }
+
+
+    private void closeCamera() {
+        if (null != mCameraDevice) {
             mCameraDevice.close();
             mCameraDevice = null;
+        }
+//        if (null != imageReader) {
+//            imageReader.close();
+//            imageReader = null;
+//        }
+    }
+
+    protected void startBackgroundThread() {
+        mBackgroundThread = new HandlerThread("Camera Background");
+        mBackgroundThread.start();
+        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+    }
+
+    protected void stopBackgroundThread() {
+        mBackgroundThread.quitSafely();
+        try {
+            mBackgroundThread.join();
+            mBackgroundThread = null;
+            mBackgroundHandler = null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -182,7 +175,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-            if (mCameraDevice != null){
+            if (mCameraDevice != null) {
                 mCameraDevice.close();
             }
             return false;
@@ -197,10 +190,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     private void openCamera() {
 
         mMainHandler = new Handler(getMainLooper());
-        mBackgroundThread = new HandlerThread("CameraBackground");
-        mBackgroundThread.start();
-        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-
+        startBackgroundThread();
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
             cameraId = manager.getCameraIdList()[0];
@@ -237,7 +227,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
         @Override
         public void onDisconnected(@NonNull CameraDevice cameraDevice) {
-            if (mCameraDevice != null){
+            if (mCameraDevice != null) {
                 mCameraDevice.close();
             }
         }
@@ -252,9 +242,6 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
     private void createCameraPreview() {
         try {
 
-            if (!textureView.isAvailable()){
-                return;
-            }
             mSurfaceTexture = textureView.getSurfaceTexture();
             mSurfaceTexture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface surface = new Surface(mSurfaceTexture);
@@ -263,7 +250,7 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
             captureRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
 
-            mCameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()), new CameraCaptureSession.StateCallback() {
+            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession session) {
                     if (mCameraDevice == null) {
@@ -314,12 +301,56 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
     private void takePicture() {
 
+        ImageReader imageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, 1);
+
+        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader imageReader) {
+                Timber.d("onImageAvailable do Action");
+                Image image = imageReader.acquireNextImage();
+
+                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+
+                File tempOutputPic = FileUtil.makeTempFile(mContext, Constants.TEMP_FILE_DIR, Constants.TMEP_PIC_PREFIX, Constants.TEMP_PIC_EXTENSION);
+
+                FileOutputStream output = null;
+
+                try {
+                    output = new FileOutputStream(tempOutputPic);
+                    output.write(bytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    image.close();
+                    if (null != output) {
+                        try {
+                            output.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Timber.d("save image");
+                }
+
+                mOutputUri = Uri.fromFile(tempOutputPic).toString();
+
+                Intent intent = new Intent(mContext, DisplayActivity.class);
+                intent.putExtra(Constants.OUTPUT_PIC_URI, mOutputUri);
+
+                startActivity(intent);
+
+                Timber.d(mOutputUri);
+            }
+        }, mMainHandler);
+
+
         try {
             final CaptureRequest.Builder builder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             builder.addTarget(imageReader.getSurface());
 
-            builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-
+//            builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
             builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
             builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
@@ -329,7 +360,25 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
             builder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
 
-            cameraCaptureSessions.capture(builder.build(), null, mBackgroundHandler);
+            List<Surface> outputSurfaces = new ArrayList<Surface>(2);
+            outputSurfaces.add(imageReader.getSurface());
+
+            mCameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
+
+                @Override
+                public void onConfigured(@NonNull CameraCaptureSession session) {
+                    try {
+                        session.capture(builder.build(), null, mBackgroundHandler);
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+
+                }
+            }, mBackgroundHandler);
 
         } catch (CameraAccessException e) {
             e.printStackTrace();

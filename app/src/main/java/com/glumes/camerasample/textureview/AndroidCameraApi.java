@@ -1,7 +1,8 @@
-package com.glumes.camerasample;
+package com.glumes.camerasample.textureview;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -16,6 +17,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -31,6 +33,10 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.glumes.camerasample.R;
+import com.glumes.camerasample.display.DisplayActivity;
+import com.glumes.camerasample.utils.Constants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -62,12 +68,14 @@ public class AndroidCameraApi extends AppCompatActivity {
     protected CaptureRequest captureRequest;
     protected CaptureRequest.Builder captureRequestBuilder;
     private Size imageDimension;
-    private ImageReader imageReader;
+//    private ImageReader imageReader;
     private File file;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
+
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +92,8 @@ public class AndroidCameraApi extends AppCompatActivity {
                 takePicture();
             }
         });
+
+        mContext = this;
     }
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
@@ -134,7 +144,7 @@ public class AndroidCameraApi extends AppCompatActivity {
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
             Toast.makeText(AndroidCameraApi.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-            createCameraPreview();
+//            createCameraPreview();
         }
     };
 
@@ -211,6 +221,8 @@ public class AndroidCameraApi extends AppCompatActivity {
                             image.close();
                         }
                     }
+
+
                 }
 
                 private void save(byte[] bytes) throws IOException {
@@ -223,6 +235,14 @@ public class AndroidCameraApi extends AppCompatActivity {
                             output.close();
                         }
                     }
+
+                    String mOutputUri = Uri.fromFile(file).toString();
+
+                    Intent intent = new Intent(mContext, DisplayActivity.class);
+                    intent.putExtra(Constants.OUTPUT_PIC_URI, mOutputUri);
+
+                    startActivity(intent);
+
                 }
             };
 
@@ -235,7 +255,7 @@ public class AndroidCameraApi extends AppCompatActivity {
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(AndroidCameraApi.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-                    createCameraPreview();
+//                    createCameraPreview();
                 }
             };
 
@@ -244,7 +264,7 @@ public class AndroidCameraApi extends AppCompatActivity {
                 @Override
                 public void onConfigured(CameraCaptureSession session) {
                     try {
-                        session.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
+                        session.capture(captureBuilder.build(), null, mBackgroundHandler);
                     } catch (CameraAccessException e) {
                         e.printStackTrace();
                     }
@@ -329,10 +349,10 @@ public class AndroidCameraApi extends AppCompatActivity {
             cameraDevice.close();
             cameraDevice = null;
         }
-        if (null != imageReader) {
-            imageReader.close();
-            imageReader = null;
-        }
+//        if (null != imageReader) {
+//            imageReader.close();
+//            imageReader = null;
+//        }
     }
 
     @Override
@@ -361,7 +381,7 @@ public class AndroidCameraApi extends AppCompatActivity {
     @Override
     protected void onPause() {
         Log.e(TAG, "onPause");
-        //closeCamera();
+        closeCamera();
         stopBackgroundThread();
         super.onPause();
     }
