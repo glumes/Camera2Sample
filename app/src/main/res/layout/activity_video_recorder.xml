@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout>
+
+    <data>
+
+    </data>
+
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.glumes.camerasample.textureview.VideoRecorderActivity">
+
+
+        <com.glumes.camerasample.views.AutoFitTextureView
+            android:id="@+id/recorder_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <com.glumes.camerasample.views.CircleButton
+            android:id="@+id/start_recorder"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_action_tick"
+            app:color="#FF4444"/>
+    </RelativeLayout>
+
+</layout>
