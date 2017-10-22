@@ -2,6 +2,9 @@ package com.glumes.camerasample;
 
 import android.app.Application;
 
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
+
 import timber.log.Timber;
 
 /**
@@ -14,5 +17,7 @@ public class CameraApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Timber.plant(new Timber.DebugTree());
+
+        Logger.addLogAdapter(new AndroidLogAdapter());
     }
 }

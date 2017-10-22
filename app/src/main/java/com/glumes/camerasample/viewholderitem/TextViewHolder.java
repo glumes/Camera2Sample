@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.view.View;
 
-import com.glumes.camerasample.textureview.AndroidCameraApi;
 import com.glumes.camerasample.camera.CameraActivity;
 import com.glumes.camerasample.surfaceview.SurfaceViewActivity;
 import com.glumes.camerasample.databinding.TextLayoutBinding;
 import com.glumes.camerasample.textureview.TextureViewActivity;
+import com.glumes.camerasample.textureview.VideoRecorderActivity;
 import com.glumes.camerasample.utils.Constants;
 import com.glumes.databindingadapter.BindingViewHolder;
 
@@ -38,14 +38,17 @@ public class TextViewHolder extends BindingViewHolder<TextModel, TextLayoutBindi
             public void onClick(View v) {
 
                 switch (textModel.type) {
-                    case Constants.SURFACEVIEW:
+                    case Constants.SURFACE_VIEW:
                         startActivity(v.getContext(), SurfaceViewActivity.class);
                         break;
-                    case Constants.TEXTUREVIEW:
+                    case Constants.TEXTURE_VIEW:
                         startActivity(v.getContext(), TextureViewActivity.class);
                         break;
                     case Constants.CAMERA_1:
                         startActivity(v.getContext(), CameraActivity.class);
+                        break;
+                    case Constants.VIDEO_RECORDER:
+                        startActivity(v.getContext(), VideoRecorderActivity.class);
                         break;
                     default:
                         break;

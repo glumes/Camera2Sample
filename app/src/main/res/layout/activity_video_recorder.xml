@@ -4,6 +4,9 @@
 
     <data>
 
+        <variable
+            name="eventHandler"
+            type="com.glumes.camerasample.textureview.VideoRecorderActivity"/>
     </data>
 
     <RelativeLayout
@@ -25,8 +28,22 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="80dp"
+            android:onClick="@{eventHandler.startVideoRecorder}"
             android:src="@drawable/ic_action_tick"
+            app:color="#FF4444"/>
+
+
+        <com.glumes.camerasample.views.CircleButton
+            android:id="@+id/stop_recorder"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="80dp"
+            android:src="@drawable/ic_action_tick"
+            android:onClick="@{eventHandler.stopVideoRecorder}"
             app:color="#FF4444"/>
     </RelativeLayout>
 

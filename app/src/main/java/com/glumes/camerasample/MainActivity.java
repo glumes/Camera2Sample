@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
         items.add(new TextModel("", Constants.PLACEHOLDER));
 
         items.add(new TextModel("安卓相机 2.0 API 接口", Constants.TITLE));
-        items.add(new TextModel("拍摄预览之 SurfaceView", Constants.SURFACEVIEW));
-        items.add(new TextModel("拍摄预览之 TextureView", Constants.TEXTUREVIEW));
-        items.add(new TextModel("视频录制",Constants.MEDIA_RECODER));
+        items.add(new TextModel("拍摄预览之 SurfaceView", Constants.SURFACE_VIEW));
+        items.add(new TextModel("拍摄预览之 TextureView", Constants.TEXTURE_VIEW));
+        items.add(new TextModel("视频录制",Constants.VIDEO_RECORDER));
     }
 }

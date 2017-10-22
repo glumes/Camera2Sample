@@ -3,8 +3,6 @@ package com.glumes.camerasample.surfaceview;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -30,15 +28,12 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.glumes.camerasample.R;
 import com.glumes.camerasample.display.DisplayActivity;
 import com.glumes.camerasample.utils.Constants;
 import com.glumes.camerasample.utils.FileUtil;
 import com.glumes.camerasample.views.CircleButton;
-
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -140,7 +135,7 @@ public class SurfaceViewActivity extends AppCompatActivity implements View.OnCli
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
 
-                File tempOutputPic = FileUtil.makeTempFile(mContext, Constants.TEMP_FILE_DIR, Constants.TMEP_PIC_PREFIX, Constants.TEMP_PIC_EXTENSION);
+                File tempOutputPic = FileUtil.makeTempFile(mContext, Constants.TEMP_FILE_DIR, Constants.TEMP_PIC_PREFIX, Constants.TEMP_PIC_EXTENSION);
 
                 FileOutputStream output = null;
 
