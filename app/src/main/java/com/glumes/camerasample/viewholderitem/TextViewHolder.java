@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.view.View;
 
-import com.glumes.camerasample.camera.CameraActivity;
-import com.glumes.camerasample.surfaceview.SurfaceViewActivity;
+import com.glumes.camerasample.camerav1.CameraActivity;
 import com.glumes.camerasample.databinding.TextLayoutBinding;
+import com.glumes.camerasample.surfaceview.SurfaceViewActivity;
 import com.glumes.camerasample.textureview.TextureViewActivity;
 import com.glumes.camerasample.textureview.VideoRecorderActivity;
 import com.glumes.camerasample.utils.Constants;
@@ -50,6 +50,8 @@ public class TextViewHolder extends BindingViewHolder<TextModel, TextLayoutBindi
                     case Constants.VIDEO_RECORDER:
                         startActivity(v.getContext(), VideoRecorderActivity.class);
                         break;
+                    case Constants.MEDIA_METADATA_RETIREVER:
+//                            startActivity();
                     default:
                         break;
                 }

@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
 
+
 android {
     compileSdkVersion 25
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.glumes.camerasample"
         minSdkVersion 22
@@ -32,8 +33,10 @@ dependencies {
 
 
     compile 'com.orhanobut:logger:2.1.1'
+    //noinspection GradleDependency
     compile 'com.android.support:support-annotations:25.3.1'
     compile 'com.github.glumes:databindingadapter:v0.2'
+    //noinspection GradleDependency
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.jakewharton:butterknife:8.8.1'

@@ -17,21 +17,17 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
-import android.os.Environment;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.glumes.camerasample.R;
@@ -39,17 +35,13 @@ import com.glumes.camerasample.databinding.ActivityVideoRecorderBinding;
 import com.glumes.camerasample.utils.Constants;
 import com.glumes.camerasample.utils.FileUtil;
 import com.glumes.camerasample.utils.PermissionUtil;
-import com.orhanobut.logger.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import timber.log.Timber;
 
 public class VideoRecorderActivity extends AppCompatActivity {
 

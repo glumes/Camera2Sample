@@ -1,4 +1,4 @@
-package com.glumes.camerasample.camera;
+package com.glumes.camerasample.camerav1;
 
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
@@ -6,8 +6,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.hardware.Camera;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.SurfaceHolder;
 
 import com.glumes.camerasample.R;

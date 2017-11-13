@@ -18,13 +18,13 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -68,7 +68,7 @@ public class AndroidCameraApi extends AppCompatActivity {
     protected CaptureRequest captureRequest;
     protected CaptureRequest.Builder captureRequestBuilder;
     private Size imageDimension;
-//    private ImageReader imageReader;
+    //    private ImageReader imageReader;
     private File file;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
@@ -250,7 +250,6 @@ public class AndroidCameraApi extends AppCompatActivity {
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
 
 
-
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(CameraCaptureSession session) {
@@ -340,10 +339,6 @@ public class AndroidCameraApi extends AppCompatActivity {
             cameraDevice.close();
             cameraDevice = null;
         }
-//        if (null != imageReader) {
-//            imageReader.close();
-//            imageReader = null;
-//        }
     }
 
     @Override

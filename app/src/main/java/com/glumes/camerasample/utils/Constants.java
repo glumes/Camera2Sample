@@ -10,16 +10,23 @@ import java.io.File;
 
 public class Constants {
 
+    //通用
+    public static final int TITLE = 0x00;
+    public static final int PLACEHOLDER = 0x01;
 
-    public static final int TITLE = 0;
+    // 相机 1.0 API 接口
+    public static final int CAMERA_1 = 0x10;
 
-    public static final int PLACEHOLDER = 1;
-    public static final int SURFACE_VIEW = 2;
-    public static final int TEXTURE_VIEW = 3;
-    public static final int CAMERA_1 = 4;
+    // 相机 2.0 API 接口
+    public static final int SURFACE_VIEW = 0x20;
+    public static final int TEXTURE_VIEW = 0x21;
+    public static final int VIDEO_RECORDER = 0x22;
 
-    public static final int VIDEO_RECORDER = 5;
+    // 音视频信息获取
+    public static final int MEDIA_METADATA_RETIREVER = 0x30;
 
+
+    // 生成的图片、音频、视频临时文件
     public static final String TEMP_FILE_DIR = Environment.getExternalStorageDirectory().getAbsolutePath()
             + File.separator + "CameraSample";
 
@@ -30,7 +37,6 @@ public class Constants {
     public static final String TEMP_VIDEO_PREFIX = "VID";
 
     public static final String TEMP_VIDEO_EXTENSION = ".mp4";
-
 
     public static final String OUTPUT_PIC_URI = "output_pic_uri";
 }
