@@ -6,7 +6,7 @@ import com.glumes.camerasample.base.BaseListActivity;
 import com.glumes.camerasample.utils.Constants;
 import com.glumes.camerasample.viewholderitem.TextModel;
 
-public class MainActivity extends BaseListActivity {
+public class SampleListActivity extends BaseListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +28,7 @@ public class MainActivity extends BaseListActivity {
 
         mItems.add(new TextModel("音视频信息", Constants.TITLE));
         mItems.add(new TextModel("MediaMetaDataRetriever 使用", Constants.MEDIA_METADATA_RETIREVER));
+
 
     }
 }

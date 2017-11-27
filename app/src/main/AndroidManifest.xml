@@ -21,7 +21,7 @@
         <activity android:name=".surfaceview.SurfaceViewActivity" />
         <activity android:name=".textureview.TextureViewActivity" />
         <activity android:name=".textureview.AndroidCameraApi" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".SampleListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
