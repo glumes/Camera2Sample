@@ -34,6 +34,7 @@
         <activity android:name=".glrender.GLRenderActivity" />
         <activity android:name=".metadata.RetrieverDataActivity" />
         <activity android:name=".base.BaseListActivity" />
+        <activity android:name=".filter.BaseFilterActivity"></activity>
     </application>
 
 </manifest>

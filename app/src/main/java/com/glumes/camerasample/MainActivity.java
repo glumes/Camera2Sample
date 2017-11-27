@@ -23,6 +23,7 @@ public class MainActivity extends BaseListActivity {
         mItems.add(new TextModel("", Constants.PLACEHOLDER));
 
         mItems.add(new TextModel("滤镜篇", Constants.TITLE));
+        mItems.add(new TextModel("黑白滤镜", Constants.FILTER_BLACK_WHITE));
 
         mItems.add(new TextModel("", Constants.PLACEHOLDER));
 

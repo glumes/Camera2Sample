@@ -22,8 +22,13 @@ public class Constants {
     public static final int TEXTURE_VIEW = 0x21;
     public static final int VIDEO_RECORDER = 0x22;
 
+
     // 音视频信息获取
     public static final int MEDIA_METADATA_RETIREVER = 0x30;
+
+    // 滤镜
+    public static final int FILTER_BLACK_WHITE = 0x40;
+
 
 
     // 生成的图片、音频、视频临时文件

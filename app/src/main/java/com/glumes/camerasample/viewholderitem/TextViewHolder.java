@@ -52,6 +52,9 @@ public class TextViewHolder extends BindingViewHolder<TextModel, TextLayoutBindi
                         break;
                     case Constants.MEDIA_METADATA_RETIREVER:
 //                            startActivity();
+                        break;
+                    case Constants.FILTER_BLACK_WHITE:
+                        break;
                     default:
                         break;
                 }
