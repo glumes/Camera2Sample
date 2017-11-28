@@ -23,12 +23,12 @@ public class SampleListActivity extends BaseListActivity {
         mItems.add(new TextModel("", Constants.PLACEHOLDER));
 
         mItems.add(new TextModel("滤镜篇", Constants.TITLE));
+        mItems.add(new TextModel("黑白滤镜", Constants.FILTER_BLACK_WHITE));
 
         mItems.add(new TextModel("", Constants.PLACEHOLDER));
 
         mItems.add(new TextModel("音视频信息", Constants.TITLE));
         mItems.add(new TextModel("MediaMetaDataRetriever 使用", Constants.MEDIA_METADATA_RETIREVER));
-
 
     }
 }
