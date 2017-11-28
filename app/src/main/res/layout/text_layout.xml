@@ -5,14 +5,18 @@
 
         <variable
             name="viewmodel"
-            type="com.glumes.camerasample.viewholderitem.TextModel"/>
+            type="com.glumes.camerasample.viewholderitem.TextModel" />
+
+        <variable
+            name="handler"
+            type="com.glumes.camerasample.eventhandler.EventHandler" />
     </data>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:id="@+id/layout"
-                  android:orientation="vertical">
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/text"
@@ -20,9 +24,10 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_margin="5dp"
+            android:onClick="@{(theview) -> handler.onClick(theview,viewmodel)}"
             android:gravity="center"
             android:text="@{viewmodel.text}"
-            android:textSize="24sp"/>
+            android:textSize="24sp" />
 
     </LinearLayout>
 

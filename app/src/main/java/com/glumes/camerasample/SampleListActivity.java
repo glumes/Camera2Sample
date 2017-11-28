@@ -6,7 +6,7 @@ import com.glumes.camerasample.base.BaseListActivity;
 import com.glumes.camerasample.utils.Constants;
 import com.glumes.camerasample.viewholderitem.TextModel;
 
-public class MainActivity extends BaseListActivity {
+public class SampleListActivity extends BaseListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
