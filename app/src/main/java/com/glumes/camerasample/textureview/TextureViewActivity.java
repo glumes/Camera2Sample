@@ -323,8 +323,8 @@ public class TextureViewActivity extends AppCompatActivity implements View.OnCli
 
             builder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
 
-            List<Surface> outputSurfaces = new ArrayList<Surface>(2);
-            outputSurfaces.add(mImageReader.getSurface());
+//            List<Surface> outputSurfaces = new ArrayList<Surface>(2);
+//            outputSurfaces.add(mImageReader.getSurface());
 
 //            mCameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
 //

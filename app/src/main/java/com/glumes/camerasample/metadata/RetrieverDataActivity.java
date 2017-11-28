@@ -18,7 +18,7 @@ import com.orhanobut.logger.Logger;
 import java.io.File;
 import java.io.IOException;
 
-public class RetrieverDataActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, MediaPlayer.OnPreparedListener {
+public class RetrieverDataActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
 
     public static final String AUDIO_FILE = Environment.getExternalStorageDirectory() + File.separator + "audio.mp3";
@@ -63,19 +63,12 @@ public class RetrieverDataActivity extends AppCompatActivity implements View.OnC
         }
         metadataRetriever.setDataSource(VIDEO_FILE);
 
-        mBinding.videoFrame.setImageBitmap(metadataRetriever.getFrameAtTime(30315, MediaMetadataRetriever.OPTION_NEXT_SYNC));
+        mBinding.videoFrame.setImageBitmap(metadataRetriever.getFrameAtTime(30315 * 1000, MediaMetadataRetriever.OPTION_NEXT_SYNC));
 
-
-        MediaPlayer mediaPlayer = new MediaPlayer();
-        try {
-            mediaPlayer.setDataSource(VIDEO_FILE);
-            mediaPlayer.setOnPreparedListener(this);
-            mediaPlayer.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mBinding.frameSeekbar.setMax(Integer.valueOf(metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
 
     }
+
 
     private void showAudioInfo() {
         if (!isFileExist(AUDIO_FILE)) {
@@ -163,6 +156,7 @@ public class RetrieverDataActivity extends AppCompatActivity implements View.OnC
 
     /**
      * 要乘以 1000 才行
+     *
      * @param seekBar
      */
     @Override
@@ -170,8 +164,4 @@ public class RetrieverDataActivity extends AppCompatActivity implements View.OnC
         mBinding.videoFrame.setImageBitmap(metadataRetriever.getFrameAtTime(seekBar.getProgress() * 1000, MediaMetadataRetriever.OPTION_NEXT_SYNC));
     }
 
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        mBinding.frameSeekbar.setMax(mp.getDuration());
-    }
 }
